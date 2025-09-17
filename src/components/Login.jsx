@@ -1,35 +1,38 @@
-
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"
-import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
 import { isNotEmpty } from "../utils/validations";
 
 export default function Login() {
-  const {user, logIn} = useAuth();
+  const { user, logIn } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  if(user) {
-    navigate('/view');
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/view');
+    }
+  }, [user, navigate]);
 
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!isNotEmpty(username) || !isNotEmpty(password)) {
-      setError('Please fill info')
+    if (!isNotEmpty(username) || !isNotEmpty(password)) {
+      setError('Please fill info');
       return;
     }
-    const success = logIn(username, password);
-    console.log(success)
-    if(success) {
-      navigate('/view')
-    } else {
-      setError('Invalid credentials.')
+    try {
+      const success = await logIn(username, password); // ✅ Await
+      if (success) {
+        navigate('/view');
+      } else {
+        setError('Invalid credentials.');
+      }
+    } catch (err) {
+      setError(err.message || 'Login failed');
     }
-  }
+  };
 
   return (
     <div className="panel login-panel">
@@ -38,7 +41,7 @@ export default function Login() {
         <div className="form-group">
           <label htmlFor="login-username">Username:</label>
           <input
-            id = "login-username"
+            id="login-username"
             type="text"
             placeholder="Enter username"
             value={username}
@@ -48,7 +51,7 @@ export default function Login() {
         <div className="form-group">
           <label htmlFor="login-password">Password:</label>
           <input
-            id = "login-password"
+            id="login-password"
             type="password"
             placeholder="Enter password"
             value={password}
@@ -64,5 +67,5 @@ export default function Login() {
         </p>
       </form>
     </div>
-  )
+  );
 }
